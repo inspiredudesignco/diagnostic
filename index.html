@@ -129,9 +129,16 @@ function openResultsPage() {
 </body>
 </html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
+  const blob = new Blob([html], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 </script>
 <style>
@@ -270,7 +277,6 @@ const maturityLevels = [
   { min:4.0, max:5.0, label:"Integrated Ecosystem", color:"#00463d", bg:"#d6ede7", border:"#5aaa8a" }
 ];
 
-let _lastPayload = {};
 let state = { phase:'intro', qIndex:0, answers:{}, userInfo:{name:'',org:'',email:'',companySize:'',industry:''}, leadSent:false };
 const totalQs = domains.reduce((a,d)=>a+d.questions.length,0);
 
@@ -497,20 +503,6 @@ function renderReport() {
   const sorted = domains.map((d,i)=>{return {name:d.name,score:domainScores[i]}}).sort((a,b)=>a.score-b.score);
   const weakDomains = sorted.slice(0,3).filter(d=>d.score<4);
   sendResults(domainScores, overall, sorted, weakDomains);
-  _lastPayload = {
-    name: state.userInfo.name, organization: state.userInfo.org,
-    email: state.userInfo.email, company_size: state.userInfo.companySize,
-    industry: state.userInfo.industry,
-    date: new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
-    completed: 'Yes — completed all 15 questions',
-    overall_score: overall, maturity_level: getMaturity(overall).label,
-    strategic_alignment: domainScores[0], audience_experience: domainScores[1],
-    knowledge_content: domainScores[2], workflow_integration: domainScores[3],
-    systems_optimization: domainScores[4],
-    priority_1: sorted[0]?.name||'', priority_2: sorted[1]?.name||'', priority_3: sorted[2]?.name||'',
-    weakest_domains: weakDomains.map(d=>d.name+' ('+d.score+')').join(', '),
-    recommended_services: weakDomains.map(d=>serviceMap[d.name].service).join(' | ')
-  };
   const interp = overall<2
     ?"Your learning ecosystem has significant structural gaps. These carry real organizational cost — in productivity, retention, and decision quality. A targeted intervention is recommended."
     :overall<3?"Learning activity exists but lacks the consistency and integration needed to drive performance. Focused improvements can create meaningful, measurable change."
@@ -583,18 +575,5 @@ function render() {
 }
 render();
 </script>
-      <div class="modal-title">Get your results in your inbox</div>
-      <div class="modal-sub">We'll send your full diagnostic results — including your score, maturity level, domain breakdown, and recommended services — straight to your email.</div>
-      <input class="modal-input" id="modal-email" type="email" placeholder="Confirm your email address" />
-      <button class="modal-btn" onclick="submitModalEmail()">Send My Results</button>
-    </div>
-    <div class="modal-success" id="modalSuccess">
-      <div style="font-size:48px;margin-bottom:12px;">✅</div>
-      <div style="font-size:18px;font-weight:700;color:#00463d;margin-bottom:8px;font-family:Georgia,serif;">Results sent!</div>
-      <div style="font-size:13px;color:#555;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin-bottom:1.25rem;">Check your inbox for your full diagnostic report. Don't forget to book your discovery call with Dr. Tiff to turn your results into a real plan.</div>
-      <button class="modal-btn" onclick="closeModal()">Back to My Results</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
