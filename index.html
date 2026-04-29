@@ -57,7 +57,7 @@
   .field-wrap { margin-bottom: 14px; }
   .field-label { display: block; font-size: 12px; font-weight: 600; color: #216d57; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   .field-required { color: #c9a84c; margin-left: 2px; }
-  .field-input { display: block; width: 100%; padding: 10px 14px; border-radius: 6px; border: 1.5px solid #e0d0c1; font-size: 14px; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; appearance: none; }
+  .field-input { display: block; width: 100%; padding: 10px 14px; border-radius: 6px; border: 1.5px solid #e0d0c1; font-size: 14px; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; appearance: none; -webkit-appearance: none; }
   .field-input:focus { outline: none; border-color: #216d57; }
   .field-input.error { border-color: #c0392b; }
   .error-msg { font-size: 12px; color: #c0392b; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: none; }
@@ -68,7 +68,11 @@
   .restart-btn { display: block; margin: 1.5rem auto 0; background: none; border: 1.5px solid #e0d0c1; border-radius: 6px; padding: 9px 22px; font-size: 13px; cursor: pointer; color: #888; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   .footer { background: #00463d; padding: 1rem 2rem; text-align: center; margin-top: 0; }
   .footer-text { font-size: 11px; color: #a8c5bc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: 0.06em; }
-  select.field-input { cursor: pointer; }
+  select.field-input { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23216d57' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .email-results-box { background: #f9f6f0; border: 1.5px solid #e0d0c1; border-radius: 10px; padding: 1.25rem 1.5rem; margin-top: 1.5rem; text-align: center; }
+  .email-results-title { font-size: 14px; font-weight: 700; color: #00463d; margin-bottom: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .email-results-sub { font-size: 13px; color: #666; margin-bottom: 1rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; }
+  .email-results-btn { display: inline-block; background: #216d57; color: #e0d0c1; border: none; border-radius: 6px; padding: 10px 24px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 </style>
 </head>
 <body>
@@ -82,11 +86,17 @@
   <div class="hero-sub">15 questions · ~5 minutes · Confidential assessment</div>
 </div>
 <div class="diag-wrap"><div id="app"></div></div>
-
 <div class="footer">
   <div class="footer-text">© InspirEDU Design Co. · inspiredu-design.com · All rights reserved</div>
 </div>
+
 <script>
+emailjs.init('2ryoSbx4z-lJMzq2E');
+const EJS_SERVICE  = 'service_78dpnxm';
+const EJS_TEMPLATE = 'template_9dk319v';
+const AT_TOKEN = 'patcLb20PuFo11aC1';
+const AT_BASE  = 'app01XEcmY8tzn7q9';
+const AT_TABLE = encodeURIComponent('Learning Ecosystems');
 
 const domains = [
   { name:"Strategic Alignment", questions:[
@@ -115,6 +125,7 @@ const domains = [
     "Learner feedback and performance data are used to improve programs continuously."
   ]}
 ];
+
 const serviceMap = {
   "Strategic Alignment":      { service:"Learning Strategy & Consulting",    desc:"Align learning investment with business outcomes through strategic planning and executive advisory." },
   "Audience & Experience":    { service:"Instructional Design & Curriculum", desc:"Design learner-centered experiences grounded in adult learning principles and performance goals." },
@@ -122,6 +133,7 @@ const serviceMap = {
   "Workflow Integration":     { service:"Embedded Learning Design",          desc:"Integrate learning touchpoints directly into workflows, tools, and job aids at point of need." },
   "Systems & Optimization":   { service:"Learning Systems & Optimization",   desc:"Audit, consolidate, and optimize your learning tech stack and measurement approach." }
 };
+
 const maturityLevels = [
   { min:1.0, max:1.9, label:"Fragmented",           color:"#7a1f1f", bg:"#fde8e8", border:"#e8a0a0" },
   { min:2.0, max:2.9, label:"Emerging",             color:"#7a4f00", bg:"#fef3d8", border:"#e8c870" },
@@ -129,21 +141,9 @@ const maturityLevels = [
   { min:4.0, max:5.0, label:"Integrated Ecosystem", color:"#00463d", bg:"#d6ede7", border:"#5aaa8a" }
 ];
 
-
-/* ── EmailJS credentials ── */
-emailjs.init('2ryoSbx4z-lJMzq2E');               // Public key
-const EJS_SERVICE  = 'service_78dpnxm';           // Service ID
-const EJS_ADMIN_T  = 'template_9dk319v';          // Admin template
-const EJS_CLIENT_T = 'template_9dk319v';          // Client template — swap to separate template ID when ready
-
-/* ── Airtable webhook (optional — add your Make/Zapier webhook URL) ── */
-const AIRTABLE_WEBHOOK = ''; // e.g. 'https://hooks.zapier.com/hooks/catch/xxxxx'
-
-/* ── State ── */
 let state = { phase:'intro', qIndex:0, answers:{}, userInfo:{name:'',org:'',email:'',companySize:'',industry:''}, leadSent:false };
 const totalQs = domains.reduce((a,d)=>a+d.questions.length,0);
 
-/* ── Scoring ── */
 function calcScores() {
   const domainScores = domains.map((d,di) => {
     let total=0, count=0, qGlobal=0;
@@ -155,8 +155,8 @@ function calcScores() {
   return {domainScores, overall};
 }
 
-function getMaturity(score) {
-  return maturityLevels.find(m=>score>=m.min&&score<=m.max)||maturityLevels[maturityLevels.length-1];
+function getMaturity(s) {
+  return maturityLevels.find(m=>s>=m.min&&s<=m.max)||maturityLevels[maturityLevels.length-1];
 }
 
 function getQGlobal(idx) {
@@ -166,88 +166,140 @@ function getQGlobal(idx) {
       if (count++===idx) return {domain:di,question:qi};
 }
 
-/* ── Build payload ── */
-function buildPayload(domainScores, overall, weakDomains) {
-  const maturity = getMaturity(overall);
-  const sorted = domains.map((d,i)=>({name:d.name,score:domainScores[i]})).sort((a,b)=>a.score-b.score);
-  return {
-    name:               state.userInfo.name,
-    organization:       state.userInfo.org,
-    email:              state.userInfo.email,
-    company_size:       state.userInfo.companySize,
-    industry:           state.userInfo.industry,
-    date:               new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
-    completed:          'Yes — completed all questions',
-    overall_score:      overall,
-    maturity_level:     maturity.label,
-    strategic_alignment:  domainScores[0],
-    audience_experience:  domainScores[1],
-    knowledge_content:    domainScores[2],
-    workflow_integration: domainScores[3],
-    systems_optimization: domainScores[4],
-    priority_1:         sorted[0]?.name || '',
-    priority_2:         sorted[1]?.name || '',
-    priority_3:         sorted[2]?.name || '',
-    weakest_domains:    weakDomains.map(d=>d.name+' ('+d.score+')').join(', '),
-    recommended_services: weakDomains.map(d=>serviceMap[d.name]?.service||d.name).join(' | '),
-    to_email:           state.userInfo.email,
-    source:             'Website Diagnostic'
-  };
-}
-
-/* ── Send emails ── */
-function sendAdminEmail(payload) {
-  emailjs.send(EJS_SERVICE, EJS_ADMIN_T, payload)
-    .then(r=>console.log('Admin email sent',r))
-    .catch(e=>console.error('Admin email failed',e));
-}
-
-function sendClientEmail(payload) {
-  emailjs.send(EJS_SERVICE, EJS_CLIENT_T, { ...payload, to_email: payload.email })
-    .then(r=>console.log('Client email sent',r))
-    .catch(e=>console.error('Client email failed',e));
-}
-
-/* ── Airtable webhook ── */
-function sendToAirtable(payload) {
-  if (!AIRTABLE_WEBHOOK) return;
-  fetch(AIRTABLE_WEBHOOK, {
+function sendToAirtable(fields) {
+  fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`, {
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  }).then(()=>console.log('Airtable webhook fired')).catch(e=>console.error('Airtable webhook failed',e));
+    headers:{'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'},
+    body: JSON.stringify({fields})
+  }).then(r=>r.json()).then(d=>console.log('Airtable',d)).catch(e=>console.error('Airtable error',e));
 }
 
-/* ── Lead capture (on Begin Assessment) ── */
+function sendAdminEmail(payload) {
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE, payload)
+    .then(r=>console.log('Admin email sent',r))
+    .catch(e=>console.error('Email error',e));
+}
+
 function sendLeadCapture() {
-  if (state.leadSent) return;
+  if(state.leadSent) return;
   state.leadSent = true;
-  const leadPayload = {
-    name: state.userInfo.name, organization: state.userInfo.org, email: state.userInfo.email,
-    company_size: state.userInfo.companySize, industry: state.userInfo.industry,
-    date: new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  sendToAirtable({
+    'Name': state.userInfo.name,
+    'Organization': state.userInfo.org,
+    'Email': state.userInfo.email,
+    'Company Size': state.userInfo.companySize,
+    'Industry': state.userInfo.industry,
+    'Date': date,
+    'Completed': 'No — lead captured',
+    'Source': 'Website Diagnostic'
+  });
+  sendAdminEmail({
+    name:state.userInfo.name, organization:state.userInfo.org,
+    email:state.userInfo.email, company_size:state.userInfo.companySize,
+    industry:state.userInfo.industry, date,
     completed:'No — lead captured, assessment started',
     overall_score:'—', maturity_level:'—',
-    strategic_alignment:'—', audience_experience:'—', knowledge_content:'—',
-    workflow_integration:'—', systems_optimization:'—',
-    priority_1:'—', priority_2:'—', priority_3:'—',
-    weakest_domains:'—', recommended_services:'—', to_email:'', source:'Website Diagnostic'
-  };
-  sendAdminEmail(leadPayload);
-  if (AIRTABLE_WEBHOOK) sendToAirtable(leadPayload);
+    strategic_alignment:'—', audience_experience:'—',
+    knowledge_content:'—', workflow_integration:'—',
+    systems_optimization:'—', priority_1:'—', priority_2:'—', priority_3:'—',
+    weakest_domains:'—', recommended_services:'—'
+  });
 }
 
-/* ── Form rendering ── */
-function renderIntroForm() {
+function sendResults(domainScores, overall, sorted, weakDomains) {
+  const maturity = getMaturity(overall);
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const p1 = sorted[0]?.name || '';
+  const p2 = sorted[1]?.name || '';
+  const p3 = sorted[2]?.name || '';
+
+  sendToAirtable({
+    'Name':                 state.userInfo.name,
+    'Organization':         state.userInfo.org,
+    'Email':                state.userInfo.email,
+    'Company Size':         state.userInfo.companySize,
+    'Industry':             state.userInfo.industry,
+    'Date':                 date,
+    'Completed':            'Yes — completed all 15 questions',
+    'Overall Score':        overall,
+    'Maturity Level':       maturity.label,
+    'Strategic Alignment':  domainScores[0],
+    'Audience Experience':  domainScores[1],
+    'Knowledge Content':    domainScores[2],
+    'Workflow Integration': domainScores[3],
+    'Systems Optimization': domainScores[4],
+    'Priority 1':           p1,
+    'Priority 2':           p2,
+    'Priority 3':           p3,
+    'Recommended Services': weakDomains.map(d=>serviceMap[d.name].service).join(' | '),
+    'Source':               'Website Diagnostic'
+  });
+
+  sendAdminEmail({
+    name:state.userInfo.name, organization:state.userInfo.org,
+    email:state.userInfo.email, company_size:state.userInfo.companySize,
+    industry:state.userInfo.industry, date,
+    completed:'Yes — completed all 15 questions',
+    overall_score:overall, maturity_level:maturity.label,
+    strategic_alignment:domainScores[0], audience_experience:domainScores[1],
+    knowledge_content:domainScores[2], workflow_integration:domainScores[3],
+    systems_optimization:domainScores[4],
+    priority_1:p1, priority_2:p2, priority_3:p3,
+    weakest_domains:weakDomains.map(d=>d.name+' ('+d.score+')').join(', '),
+    recommended_services:weakDomains.map(d=>serviceMap[d.name].service).join(' | ')
+  });
+}
+
+function buildClientEmailLink(overall, maturity, weakDomains, domainScores) {
+  const subject = encodeURIComponent('Your InspirEDU Learning Ecosystem Diagnostic Results');
+  const body = encodeURIComponent(
+    'Hi ' + state.userInfo.name + ',\n\n' +
+    'Thank you for completing the InspirEDU Learning Ecosystem Diagnostic. Here is a summary of your results:\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'OVERALL SCORE: ' + overall.toFixed(1) + ' / 5\n' +
+    'MATURITY LEVEL: ' + maturity.label + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+    'DOMAIN SCORES:\n' +
+    domains.map((d,i) => '  • ' + d.name + ': ' + domainScores[i].toFixed(1)).join('\n') + '\n\n' +
+    'PRIORITY GAPS:\n' +
+    weakDomains.map((d,i) => '  ' + (i+1) + '. ' + d.name + ' (' + d.score.toFixed(1) + ')').join('\n') + '\n\n' +
+    'RECOMMENDED SERVICES:\n' +
+    weakDomains.map(d => '  • ' + serviceMap[d.name].service).join('\n') + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'Ready to close these gaps? Book a complimentary discovery call with Dr. Tiff:\n' +
+    'https://www.inspiredu-design.com/contact/book-a-discovery-call\n\n' +
+    'InspirEDU Design Co. | Educate. Empower. Elevate.\n' +
+    'inspiredu-design.com'
+  );
+  return `mailto:${state.userInfo.email}?subject=${subject}&body=${body}`;
+}
+
+function domainInsight(name, score) {
+  const i = {
+    "Strategic Alignment":    score<3?"Learning may lack executive sponsorship. Without strategic framing, programs fail to gain traction or budget.":"Strategic foundations are present. Tighten measurement and connect outcomes to business KPIs.",
+    "Audience & Experience":  score<3?"Learner needs may not be well understood, resulting in generic or misaligned content. Start with audience analysis.":"Experience design is developing. Deepen personalization and evidence-based instructional approaches.",
+    "Knowledge & Content Flow":score<3?"Knowledge likely lives in silos — in individuals, inboxes, or disconnected systems. Significant institutional risk exists.":"Content organization is improving. Prioritize governance and maintenance processes.",
+    "Workflow Integration":   score<3?"Learning happens away from work, reducing transfer and application. Embedding learning into workflows dramatically increases impact.":"Integration is underway. Explore performance support tools and contextual job aids.",
+    "Systems & Optimization": score<3?"Tools may be underutilized or misaligned. A systems audit can surface quick wins and reduce redundancy.":"Systems are in place. Focus on data instrumentation and closing the feedback loop."
+  };
+  return i[name]||'';
+}
+
+function renderIntro() {
   return `
+    <div class="intro-title">Is your organization's learning ecosystem working for you?</div>
+    <div class="intro-text">Most organizations have learning happening — in onboarding, in meetings, in everyday decisions. But without intentional design, it stays invisible, inconsistent, and unscalable.<br><br>This diagnostic assesses your learning ecosystem across five critical domains and identifies exactly where the gaps are — and what to do about them.</div>
+    <div class="intro-meta">15 questions · ~5 minutes · Your results are confidential</div>
+    <hr class="divider" />
     <div class="field-wrap">
       <label class="field-label" for="inp-name">Your Name <span class="field-required">*</span></label>
       <input class="field-input" id="inp-name" type="text" placeholder="First and last name" value="${state.userInfo.name}" />
       <div class="error-msg" id="err-name">Please enter your name.</div>
     </div>
     <div class="field-wrap">
-      <label class="field-label" for="inp-org">Organization / Business <span class="field-required">*</span></label>
-      <input class="field-input" id="inp-org" type="text" placeholder="Company or business name" value="${state.userInfo.org}" />
+      <label class="field-label" for="inp-org">Organization <span class="field-required">*</span></label>
+      <input class="field-input" id="inp-org" type="text" placeholder="Company or organization name" value="${state.userInfo.org}" />
       <div class="error-msg" id="err-org">Please enter your organization's name.</div>
     </div>
     <div class="field-wrap">
@@ -273,21 +325,20 @@ function renderIntroForm() {
         <option ${state.userInfo.industry==='Healthcare'?'selected':''}>Healthcare</option>
         <option ${state.userInfo.industry==='Nonprofit'?'selected':''}>Nonprofit</option>
         <option ${state.userInfo.industry==='Technology'?'selected':''}>Technology</option>
-        <option ${state.userInfo.industry==='Retail'?'selected':''}>Retail</option>
         <option ${state.userInfo.industry==='Coaching / Consulting'?'selected':''}>Coaching / Consulting</option>
+        <option ${state.userInfo.industry==='Retail'?'selected':''}>Retail</option>
         <option ${state.userInfo.industry==='Other'?'selected':''}>Other</option>
       </select>
       <div class="error-msg" id="err-industry">Please select your industry.</div>
     </div>
     <div class="field-wrap">
-      <label class="field-label" for="inp-email">Email Address <span class="field-required">*</span></label>
-      <input class="field-input" id="inp-email" type="email" placeholder="you@yourbusiness.com" value="${state.userInfo.email}" />
+      <label class="field-label" for="inp-email">Work Email <span class="field-required">*</span></label>
+      <input class="field-input" id="inp-email" type="email" placeholder="you@organization.com" value="${state.userInfo.email}" />
       <div class="error-msg" id="err-email">Please enter a valid email address.</div>
     </div>
     <button class="nav-btn primary" onclick="startDiag()" style="margin-top:8px;">Begin Assessment</button>`;
 }
 
-/* ── Question rendering ── */
 function renderQuestion() {
   const info=getQGlobal(state.qIndex);
   const domain=domains[info.domain];
@@ -301,7 +352,7 @@ function renderQuestion() {
     <div class="likert-row">
       ${[1,2,3,4,5].map(v=>`<button class="likert-btn${current===v?' selected':''}" onclick="selectAnswer(${v})">${v}</button>`).join('')}
     </div>
-    <div class="likert-labels"><span>Not at all</span><span>Slightly</span><span>Somewhat</span><span>Mostly</span><span>Completely</span></div>
+    <div class="likert-labels"><span>Non-existent</span><span>Ad hoc</span><span>Developing</span><span>Structured</span><span>Optimized</span></div>
     <div class="nav-row">
       ${state.qIndex>0?`<button class="nav-btn" onclick="goBack()">Back</button>`:''}
       <button class="nav-btn primary" onclick="goNext()" ${!current?'disabled':''}>
@@ -310,79 +361,18 @@ function renderQuestion() {
     </div>`;
 }
 
-/* ── Navigation ── */
-function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
-
-function startDiag() {
-  const name     = document.getElementById('inp-name').value.trim();
-  const org      = document.getElementById('inp-org').value.trim();
-  const size     = document.getElementById('inp-size').value;
-  const industry = document.getElementById('inp-industry').value;
-  const email    = document.getElementById('inp-email').value.trim();
-  let valid = true;
-  [['name',name],['org',org],['size',size],['industry',industry],['email',email]].forEach(([f,v])=>{
-    const bad = f==='email' ? (!v||!validateEmail(v)) : !v;
-    document.getElementById('inp-'+f).classList.toggle('error',bad);
-    document.getElementById('err-'+f).classList.toggle('visible',bad);
-    if(bad) valid=false;
-  });
-  if(!valid) return;
-  state.userInfo = {name, org, email, companySize:size, industry};
-  sendLeadCapture();
-  state.phase='questions'; state.qIndex=0; render();
-}
-
-function selectAnswer(val){ state.answers[state.qIndex]=val; render(); }
-function goNext(){
-  if(!state.answers[state.qIndex]) return;
-  state.qIndex<totalQs-1 ? state.qIndex++ : (state.phase='report');
-  render();
-}
-function goBack(){ if(state.qIndex>0){ state.qIndex--; render(); } }
-function restartDiag(){ state={phase:'intro',qIndex:0,answers:{},userInfo:state.userInfo,leadSent:false}; render(); }
-
-
-function domainInsight(name, score) {
-  const i = {
-    "Strategic Alignment":      score<3?"Learning may lack executive sponsorship. Without strategic framing, programs fail to gain traction or budget.":"Strategic foundations are present. Tighten measurement and connect outcomes to business KPIs.",
-    "Audience & Experience":    score<3?"Learner needs may not be well understood, resulting in generic or misaligned content. Start with audience analysis.":"Experience design is developing. Deepen personalization and evidence-based instructional approaches.",
-    "Knowledge & Content Flow": score<3?"Knowledge likely lives in silos — in individuals, inboxes, or disconnected systems. Significant institutional risk exists.":"Content organization is improving. Prioritize governance and maintenance processes.",
-    "Workflow Integration":      score<3?"Learning happens away from work, reducing transfer and application. Embedding learning into workflows dramatically increases impact.":"Integration is underway. Explore performance support tools and contextual job aids.",
-    "Systems & Optimization":   score<3?"Tools may be underutilized or misaligned. A systems audit can surface quick wins and reduce redundancy.":"Systems are in place. Focus on data instrumentation and closing the feedback loop."
-  };
-  return i[name]||"";
-}
-
-
-function renderIntro() {
-  return `
-    <div class="intro-title">Is your organization's learning ecosystem working for you?</div>
-    <div class="intro-text">Most organizations have learning happening — in onboarding, in meetings, in everyday decisions. But without intentional design, it stays invisible, inconsistent, and unscalable.<br><br>This diagnostic assesses your learning ecosystem across five critical domains and identifies exactly where the gaps are — and what to do about them.</div>
-    <div class="intro-meta">15 questions · ~5 minutes · Your results are confidential</div>
-    <hr class="divider" />
-    ${renderIntroForm()}`;
-}
-
-
 function renderReport() {
   const {domainScores, overall} = calcScores();
   const maturity = getMaturity(overall);
-  const sorted = domains.map((d,i)=>({name:d.name,score:domainScores[i]})).sort((a,b)=>a.score-b.score);
+  const sorted = domains.map((d,i)=>{return {name:d.name,score:domainScores[i]}}).sort((a,b)=>a.score-b.score);
   const weakDomains = sorted.slice(0,3).filter(d=>d.score<4);
-
-  /* ── Build & send payload ── */
-  const payload = buildPayload(domainScores, overall, weakDomains);
-  console.log('Diagnostic Payload', payload);
-  sendAdminEmail(payload);
-  sendClientEmail(payload);
-  sendToAirtable(payload);
-
+  sendResults(domainScores, overall, sorted, weakDomains);
+  const emailLink = buildClientEmailLink(overall, maturity, weakDomains, domainScores);
   const interp = overall<2
     ?"Your learning ecosystem has significant structural gaps. These carry real organizational cost — in productivity, retention, and decision quality. A targeted intervention is recommended."
     :overall<3?"Learning activity exists but lacks the consistency and integration needed to drive performance. Focused improvements can create meaningful, measurable change."
     :overall<4?"Your ecosystem has solid foundations. Opportunities remain to deepen integration and strengthen measurement."
     :"Your learning ecosystem is mature and well-integrated. Focus on optimization and innovation to sustain your advantage.";
-
   return `
     <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#216d57;text-transform:uppercase;margin-bottom:16px;font-family:sans-serif;">Learning Ecosystem Diagnostic · ${state.userInfo.name} · ${state.userInfo.org}</div>
     <div class="score-card">
@@ -397,10 +387,15 @@ function renderReport() {
       </div>
     </div>
     <div class="section-title">Domain Breakdown</div>
-    ${domains.map((d,i)=>{const s=domainScores[i];const pct=((s-1)/4)*100;return`<div class="domain-row"><div class="domain-name">${d.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-score">${s.toFixed(1)}</div></div>`;}).join('')}
+    ${domains.map((d,i)=>{const s=domainScores[i];const pct=((s-1)/4)*100;return`<div class="domain-row"><div class="domain-name">${d.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-score">${s.toFixed(1)}</div></div>`;}). join('')}
     ${weakDomains.length?`<div class="section-title">Priority Gaps</div>${weakDomains.map(d=>`<div class="insight-card"><div class="insight-label">${d.name} · ${d.score.toFixed(1)}</div><div class="insight-text">${domainInsight(d.name,d.score)}</div></div>`).join('')}`:''}
     <div class="section-title">Where InspirEDU Can Help</div>
-    ${weakDomains.map(d=>{const r=serviceMap[d.name];return`<div class="rec-card"><div class="rec-title">${r.service}</div><div class="rec-text">${r.desc}</div></div>`;}).join('')}
+    ${weakDomains.map(d=>{const r=serviceMap[d.name];return`<div class="rec-card"><div class="rec-title">${r.service}</div><div class="rec-text">${r.desc}</div></div>`;}). join('')}
+    <div class="email-results-box">
+      <div class="email-results-title">📧 Want a copy of your results?</div>
+      <div class="email-results-sub">Click below to open a pre-filled email with your full results — just hit send to deliver it to your inbox.</div>
+      <a class="email-results-btn" href="${emailLink}">Send Results to My Email</a>
+    </div>
     <div class="cta-box">
       <div class="cta-heading">Your results are ready. Now let's build the plan.</div>
       <div class="cta-sub">InspirEDU Design Co. works with organizations to close exactly these kinds of gaps — through strategy, design, and systems that actually stick. Book a discovery call to walk through your results with Dr. Tiff.</div>
@@ -409,14 +404,41 @@ function renderReport() {
     </div>
     <button class="restart-btn" onclick="restartDiag()">Retake Assessment</button>`;
 }
+
+function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function startDiag() {
+  const name=document.getElementById('inp-name').value.trim();
+  const org=document.getElementById('inp-org').value.trim();
+  const size=document.getElementById('inp-size').value;
+  const industry=document.getElementById('inp-industry').value;
+  const email=document.getElementById('inp-email').value.trim();
+  let valid=true;
+  [['name',name],['org',org],['size',size],['industry',industry],['email',email]].forEach(([f,v])=>{
+    const bad=f==='email'?(!v||!validateEmail(v)):!v;
+    document.getElementById('inp-'+f).classList.toggle('error',bad);
+    document.getElementById('err-'+f).classList.toggle('visible',bad);
+    if(bad) valid=false;
+  });
+  if(!valid) return;
+  state.userInfo={name,org,email,companySize:size,industry};
+  sendLeadCapture();
+  state.phase='questions'; state.qIndex=0; render();
+}
+function selectAnswer(val){ state.answers[state.qIndex]=val; render(); }
+function goNext(){
+  if(!state.answers[state.qIndex]) return;
+  state.qIndex<totalQs-1 ? state.qIndex++ : (state.phase='report');
+  render();
+}
+function goBack(){ if(state.qIndex>0){ state.qIndex--; render(); } }
+function restartDiag(){ state={phase:'intro',qIndex:0,answers:{},userInfo:state.userInfo,leadSent:false}; render(); }
 function render() {
   document.getElementById('app').innerHTML =
-    state.phase==='intro' ? renderIntro() :
+    state.phase==='intro'     ? renderIntro() :
     state.phase==='questions' ? renderQuestion() :
     renderReport();
 }
 render();
-
 </script>
 </body>
 </html>
